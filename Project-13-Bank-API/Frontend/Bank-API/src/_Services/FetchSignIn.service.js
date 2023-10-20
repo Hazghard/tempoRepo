@@ -1,5 +1,12 @@
 import axios from 'axios';
 
+export async function login({email, password}) {
+	return axios.post('http://localhost:3001/api/v1/user/login', {
+		email,
+		password
+	})
+}
+
 async function SignInAPI(formData,setIsAuthenticated) {
 	try {
 		const loginResponse = await axios.post('http://localhost:3001/api/v1/user/login', {

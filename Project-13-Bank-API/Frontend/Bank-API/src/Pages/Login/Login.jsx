@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import AuthenticationThunks from '@/Store/Authentication/thunks'
 
 import SignInAPI from '@/_Services/FetchSignIn.service.js';
 
@@ -8,34 +9,37 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircleUser } from '@fortawesome/free-solid-svg-icons';
 
 import argentBankLogo from '@/assets/Images/argentBankLogo.png';
+import UserSelectors from '@/Store/User/selectors.js'
 
 
 const Login = () => {
-	const navigate = useNavigate();
-	const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-	useEffect(() => {
-		if(isAuthenticated){
-			navigate('/profile');
-		}
-	}, [isAuthenticated])
-
+	const navigate = useNavigate()
+	const userProfile = useSelector(UserSelectors.profile)
+	const dispatch = useDispatch()
 
 	async function handleSubmitForm(e) {
 		e.preventDefault();
 		let formData = {
-			username:{
-				email: e.target[0].value,
+			email:{
+				value: e.target[0].value,
 				isOk: (/[A-Za-z0-9_\.+]+@[A-Za-z0-9]+\.[a-z]{2,3}/.test(e.target[0].value) ? true : false),
 			},
 			password: e.target[1].value,
 			rememberMe: e.target[2].checked
 		};
 
-		if(formData.username.isOk) {
-			const isSignedAndAuthorised = await SignInAPI(formData,setIsAuthenticated);
+		if(formData.email.isOk) {
+			await dispatch(AuthenticationThunks.login({email: formData.email.value, password: formData.password}))
 		}
 	}
+
+	useEffect(() => {
+		if (!userProfile) {
+			return
+		}
+
+		navigate('/profile')
+	}, [ userProfile ]);
 
 	return (
 		<>
@@ -61,8 +65,8 @@ const Login = () => {
 					<h1>Sign In</h1>
 					<form onSubmit={handleSubmitForm}>
 						<div className="input-wrapper">
-							<label htmlFor="username">Username</label>
-							<input type="text" id="username" />
+							<label htmlFor="email">Email</label>
+							<input type="email" id="email" />
 						</div>
 						<div className="input-wrapper">
 							<label htmlFor="password">Password</label>
